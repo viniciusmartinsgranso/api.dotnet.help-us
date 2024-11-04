@@ -1,7 +1,9 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 using api.dotnet.help_us.Modules.Users.Entities;
+using api.dotnet.help_us.Modules.Users.Models;
 using Microsoft.IdentityModel.Tokens;
 
 namespace api.dotnet.help_us.Modules.Auth.Jwt;
@@ -11,10 +13,13 @@ public class JwtService(IConfiguration config)
 
     public string GenerateToken(UserEntity user)
     {
+        var userDto = new UserDto(user);
+
+        var userJson = JsonSerializer.Serialize(userDto);
+
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Email, user.Email)
+            new Claim("UserEntity", userJson)
         };
 
         claims.AddRange(user.Roles.Select(role => new Claim(ClaimTypes.Role, role.ToString())));

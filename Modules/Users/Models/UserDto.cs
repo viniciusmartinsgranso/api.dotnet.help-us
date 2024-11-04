@@ -1,19 +1,36 @@
-﻿using api.dotnet.help_us.Data;
+﻿using System.Text.Json.Serialization;
+using api.dotnet.help_us.Data;
 using api.dotnet.help_us.Modules.Users.Entities;
 
 namespace api.dotnet.help_us.Modules.Users.Models;
 
-public class UserDto(UserEntity user)
+public class UserDto
 {
-    public Guid Id { get; set; } = user.Id;
-    
-    public DateTime CreatedAt { get; set; } = user.CreatedAt;
-    
-    public DateTime UpdatedAt { get; set; } = user.UpdatedAt;
+    [JsonConstructor]
+    public UserDto(Guid id, DateTime createdAt, DateTime updatedAt, string name, string email, List<RolesEnum> roles)
+    {
+        Id = id;
+        CreatedAt = createdAt;
+        UpdatedAt = updatedAt;
+        Name = name;
+        Email = email;
+        Roles = roles;
+    }
 
-    public string Name { get; set; } = user.Name;
+    public UserDto(UserEntity user) : this(user.Id, user.CreatedAt, user.UpdatedAt, user.Name, user.Email, user.Roles)
+    {
+    }
     
-    public string Email { get; set; } = user.Email;
+    public Guid Id { get; set; }
     
-    public List<RolesEnum> Roles { get; set; } = user.Roles;
+    public DateTime CreatedAt { get; set; }
+    
+    public DateTime UpdatedAt { get; set; }
+
+    public string Name { get; set; }
+
+    public string Email { get; set; }
+    
+    public List<RolesEnum> Roles { get; set; }
+
 }

@@ -1,11 +1,8 @@
-using System.Security.Claims;
-using System.Text.Json;
 using api.dotnet.help_us.Data;
+using api.dotnet.help_us.Modules.Auth.Jwt;
 using api.dotnet.help_us.Modules.Auth.Models;
 using api.dotnet.help_us.Modules.Users.Entities;
 using api.dotnet.help_us.Modules.Users.Models;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,8 +14,13 @@ namespace api.dotnet.help_us.Modules.Users.Controller
     {
         
         [HttpGet]
+        [UserContext]
         public async Task<IActionResult> GetAll()
         {
+            var requestUser = HttpContext.Items["requestUser"] as UserDto;
+            
+            var isAdmin = IsAdmin(requestUser!);
+            
             var users = await context.Users.ToListAsync();
             
             if (users.Count.Equals(0))
@@ -30,8 +32,14 @@ namespace api.dotnet.help_us.Modules.Users.Controller
         }
 
         [HttpGet("{id}")]
+        [AuthorizationRoles(RolesEnum.User, RolesEnum.User)]
+        [UserContext]
         public async Task<IActionResult> GetById(Guid id)
         {
+            var requestUser = HttpContext.Items["requestUser"] as UserDto;
+            
+            var isAdmin = IsAdmin(requestUser!);
+            
             var user = await context.Users.FindAsync(id);
 
             if (user == null)
@@ -165,6 +173,11 @@ namespace api.dotnet.help_us.Modules.Users.Controller
             await context.SaveChangesAsync();
 
             return Ok();
+        }
+
+        private bool IsAdmin(UserDto user)
+        {
+            return user.Roles.Exists(r => r == RolesEnum.Admin);
         }
     }
 }
